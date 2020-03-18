@@ -16,6 +16,8 @@ library(dplyr)
 library(lubridate)
 ```
 
+# variable settings
+
 ObjectName <- object_value
 ```{r}
 a <- 2
@@ -30,5 +32,32 @@ a
 ```{r}
 3 -> b
 ```
+
+```{r}
+my_108_total_credits <- 15
+_108_total_credits <- 15 #不可以用底線開頭
+108_total_credits <- 15 #不可以用數字開頭
+_my_108_total_credits <- 15 #不可以用底線開頭
+my.108.total_credits <- 15
+.108.total_credits <- 15 # 隱藏變數 不可以. +數字
+.my.108.total_credits <- 15
+我的108學年總學分數 <- 15
+`我的108學年總學分數` <- 15 # 特殊名稱處理，`不是名稱的一部份
+`.108.total_credits` <- 15
+```
+
+```{r}
+a <- 15 # 變數設定
+b <- a # 呼叫a的值，用來設定變數b的值，相當於 b <- 15
+```
+
+```{r}
+`我的年紀` <- 20
+my_age <- `我的年紀`
+```
+
+
+
+
 
 
