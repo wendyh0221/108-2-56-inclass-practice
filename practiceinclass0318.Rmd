@@ -1,0 +1,34 @@
+---
+title: "practiceinclass0318"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# package
+
+## insert a R new chunk
+
+```{r}
+library(dplyr)
+library(lubridate)
+```
+
+ObjectName <- object_value
+```{r}
+a <- 2
+a = 2 # = 與 <-同義
+```
+
+```{r}
+a
+```
+要把a叫出來，environment裡必須要有a
+
+```{r}
+3 -> b
+```
+
+
