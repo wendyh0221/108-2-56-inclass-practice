@@ -1,0 +1,65 @@
+---
+title: "0402practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##class/type conversion
+
+```{r}
+stringInteger <- c("1","2","-11") #雙引號裡面是character
+class(stringInteger) # 無法進行數值運算
+stringInteger+2 #character不能加減 numeric才可以
+```
+或是用as.把它變成numeric
+```{r}
+stringInteger <- c("1","2","-11")
+class(stringInteger)
+numericInteger <- as.numeric(stringInteger) #把stringInteger用as.存成numericInteger
+numericInteger+2
+```
+
+或是把c裡面的東東改成下面就可以變成numeric
+```{r}
+stringInteger <- c(1,2,-11)
+class(stringInteger)
+stringInteger+2
+```
+
+```{r}
+trueInteger <- as.integer(stringInteger)
+class(trueInteger) # 可以進行數值運算 變成numeric
+typeof(trueInteger)
+trueInteger+2
+```
+
+excercise
+```{r}
+studentId <- c(410773002, 410773015)
+class(studentId)
+studentId <- as.character(studentId)
+class(studentId)
+```
+
+##Date/Time
+```{r}
+browseURL("https://docs.google.com/spreadsheets/d/1EAG49qDKPWWi0ebkVr29TLrvVnoBPfkvxYY-J3xLAHY/edit#gid=458686645")
+```
+
+```{r}
+library(lubridate)
+```
+台北 2020-03-18 13:52:40
+```{r}
+ymd_hms("2020-03-18 13:52:40")
+```
+葡萄牙 Mar.18, 2020, 05:52:40
+```{r}
+ymd_hms("2020-03-18 05:52:40")
+```
+
+
+
