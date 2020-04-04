@@ -109,9 +109,54 @@ commit <- list(
 print(commit)
 ```
 
+```{r}
+browseURL("https://api.github.com/repos/tpemartin/108-2-56-inclass-practice/commits") 
+```
 
+```{r}
+library(jsonlite) # 不少同學這行會有Error，還記得如何排除嗎？
+toJSON(commit)
+```
 
+```{r}
+`小明修課紀錄`<- list(
+  `108-1` = list(
+   list(
+     name= "個體經濟學",
+    teacher= "Alice",
+    score=85)),
+  list(
+    name="總體經濟學",
+       teacher="Mark",
+       score=73),
+  `108-2`= list(
+    name="作業研究",
+    teacher="Jason",
+    score="90")
+)
+print(`小明修課紀錄`)  
 
+```
+
+```{r}
+library(lubridate)
+TaipeiCity <- list(
+  date= list(
+    today= ymd("2020-03-31"),
+    tomorrow= ymd("2020-04-01")),
+  MaxT = 25,
+  minT = 18)
+
+NewTaipeiCity <- list(
+  date= list(
+    today=ymd("2020-03-31"),
+    tomorrow=ymd("2020-04-01")),
+  MaxT=24,
+  minT=15)
+
+print(TaipeiCity)
+print(NewTaipeiCity)
+```
 
 
 
