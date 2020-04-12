@@ -1,0 +1,237 @@
+---
+title: "0410practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 選取元素
+
+##一個元素
+
+### 用位置選 `[[]]` {#choosebyposition}
+```{r}
+vectorExample <- c("小明","小英","大雄")
+
+# 有多少位置可選：
+length(vectorExample)
+```
+
+```{r}
+vectorExample[[1]]
+vectorExample[[3]]
+```
+
+```{r}
+#從旁邊的放大鏡看可以發現其實實際上只有兩個可以選:student 跟學期
+listExample <- 
+  list(
+    student="小明",
+    course_info=list(
+      `108-1`=list(
+        list(
+          name="個體經濟學",
+          teacher="Alice",
+          grade=85
+        )
+      ),
+      `108-2`=list(
+        list(
+          name="總體經濟學",
+          teacher="Mark",
+          grade=78
+        )
+      )
+    )
+  )
+# 有多少位置可選：
+length(listExample)
+```
+
+```{r}
+listExample[[1]]
+listExample[[2]]
+```
+
+練習
+```{r}
+library(jsonlite)
+fromJSON("https://data.tainan.gov.tw/dataset/4cd9345a-04bf-4328-a97d-314ff78b4763/resource/afc025fc-1ef4-447c-b785-a680391d0ca1/download/tnsport2.json", simplifyDataFrame = F) -> tainanSportsMap
+
+length(tainanSportsMap)
+```
+
+```{r}
+tainanSportsMap[[1]]
+tainanSportsMap[[1076]]
+```
+
+###用名字選
+```{r}
+# 有多少名字可選：
+names(listExample)
+```
+
+```{r}
+listExample$student
+listExample$course_info 
+```
+
+```{r}
+str(listExample) #用來看資料的結構
+```
+
+```{r}
+str(listExample$course_info)
+```
+
+其實也可以用[["名字"]]來選，只是名字要以字串「值」的方式來寫，也就是要用引號一對"…", 不用反頓點一對`…`。
+```{r}
+listExample[["student"]]
+listExample$student
+
+listExample[["course_info"]] # 小心不是反頓點喔。
+listExample$course_info
+```
+
+```{r}
+student <- "student"
+listExample[[student]]
+```
+
+
+
+練習
+```{r}
+fromJSON("http://data.ntpc.gov.tw/api/v1/rest/datastore/382000000A-000157-002",
+         simplifyDataFrame = F) -> newTaipeiCityVaccine
+```
+
+```{r}
+str(newTaipeiCityVaccine)
+```
+
+```{r}
+length(newTaipeiCityVaccine)
+names(newTaipeiCityVaccine)
+str(newTaipeiCityVaccine[[1]])
+str(newTaipeiCityVaccine$success)
+str(newTaipeiCityVaccine[["success"]])
+
+str(newTaipeiCityVaccine[[2]], max.level = 1)
+str(newTaipeiCityVaccine$result, max.level = 1)
+str(newTaipeiCityVaccine[["result"]], max.level = 1)
+```
+
+
+##多個元素 []
+
+###用位置選
+```{r}
+vectorExample
+vectorExample[c(1,3)]
+vectorExample[c(3,2,1)] # 產生重新排列效果
+```
+
+```{r}
+# 顯示到第一層
+str(listExample, max.level=1)
+
+str(listExample[c(1,2)],max.level = 1)
+str(listExample[c(2,1)],max.level = 1)
+```
+
+任選數筆tainanSportsMap的運動地點。
+```{r}
+str(tainanSportsMap,max.level = 1)
+str(tainanSportsMap[c(1,382,1076)],max.level = 1)
+```
+
+###用名字選
+```{r}
+# 顯示到第一層
+str(listExample, max.level=1)
+
+listExample[[c("course_info")]] #因為只有選一個元素所以要用兩層中括號 也可以不用c 就跟前面選單一元素一樣
+listExample[c("student","course_info")]
+listExample[c("course_info","student")]
+```
+
+練習
+```{r}
+fromJSON("https://www.dropbox.com/s/qnm9bnz7vccrvcz/taipeiNightMarkets.json?dl=1", simplifyDataFrame = F) -> taipeiNightMarkets
+```
+
+```{r}
+str(taipeiNightMarkets,max.level = 1)
+taipeiNightMarkets[c("寧夏觀光夜市","華西街觀光夜市")]
+```
+
+###用「要/不要」邏輯向量選
+```{r}
+vectorExample
+vectorExample[c(T,T,F)] # 要，要，不要
+```
+
+```{r}
+str(listExample[c(F,T)]) # 不要，要
+str(listExample[c(T,T)]) # 要，要
+```
+
+練習:用「要/不要」邏輯向量自taipeiNightMarkets選出 寧夏觀光夜市，西昌街觀光夜市，大龍街夜市， 雙城街夜市。
+```{r}
+names(taipeiNightMarkets)
+c(T,F,F,F,T,F,F,F,F,T,F,F,T) ->selectedMarkets
+str(taipeiNightMarkets[c(T,F,F,F,T,F,F,F,F,T,F,F,T)],max.level = 1)
+```
+
+```{r}
+selectedMarkets<- rep(F,14) #repeat F by 14 times 
+print(selectedMarkets)
+selectedMarkets[c(1,5,10,14)] <- TRUE #generic replacement
+selectedMarkets
+```
+
+```{r}
+str(taipeiNightMarkets[selectedMarkets],max.level = 1)
+```
+
+
+```{r}
+str(listExample,max.level = 3)
+```
+
+
+以下兩個表面都是選取“course_info”:
+
+```{r}
+get1 <- listExample[["course_info"]]
+get2 <- listExample["course_info"]
+```
+
+
+[[]]: 拿出某個物件值。
+```{r}
+#get1 #學期拿出來，有三個元素的list
+str(listExample,max.level = 3)
+```
+
+```{r}
+get1 <- listExample["course_info"]
+str(get1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
