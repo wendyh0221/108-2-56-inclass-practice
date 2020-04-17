@@ -1,0 +1,148 @@
+---
+title: "0417practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#連鎖選取
+```{r}
+listExample <- 
+  list(
+    student="小明",
+    course_info=list(
+      `108-1`=list(
+        list(
+          name="個體經濟學",
+          teacher="Alice",
+          grade=85
+        )
+      ),
+      `108-2`=list(
+        list(
+          name="總體經濟學",
+          teacher="Mark",
+          grade=78
+        )
+      )
+    )
+  )
+```
+
+
+```{r}
+str(listExample)
+```
+
+```{r}
+get1 <- listExample[["course_info"]] #把course_info裡面的元素拿出來，但仍保留母層list的結構
+get1 <- listExample$course_info #跟上一行一樣
+
+get2 <- listExample["course_info"] #只留下course_info這個list，破壞母層的結構
+```
+
+```{r}
+str(get1)
+```
+
+```{r}
+str(get2)
+```
+
+練習：在前面討論使用$及[ ]取一個元素時我們創造了get1與get2兩個物件，請分別由get1, get2取出108-1學期個體經濟學教師姓名。
+
+##從get1取出
+```{r}
+get1 -> listExample[["course_info"]]
+get1$`108-1` -> get1_layer1
+get1_layer1[[1]] -> get1_layer2
+get1_layer2$teacher
+```
+
+```{r}
+listExample[["course_info"]]$`108-1`[[1]]$teacher
+```
+
+
+##從get2取出
+```{r}
+get2 <- listExample["course_info"]
+get2[[1]] -> get2_layer1
+get2_layer1$`108-1` -> get2_layer2
+get2_layer2[[1]] -> get2_layer3
+get2_layer3$teacher
+```
+
+```{r}
+listExample["course_info"][[1]]$`108-1`[[1]]$teacher
+listExample["course_info"][["course_info"]]$`108-1`[[1]]$teacher 
+#所以一開始只用一層中括號取的話會像做白工 因為還是得用兩層中括號再把course_info取出來
+```
+
+#List 應用
+
+其實atomc vector也可以命名 但只能用[[]]或[]不能用$
+
+```{r}
+vector1 <- c(a=1,b=3,c=4)
+vector1[["a"]]
+vector1[c("a","c")]
+vector1$a #不能用
+
+list1 <- list(a=1,b=3,c=4)
+list1[["a"]]
+list1[c("a","c")]
+list1$a
+```
+
+```{r}
+today <- list(
+  list("台北市",c(highest_temp = 25),c(lowest_temp = 18)),
+  list("新北市",c(highest_temp = 24),c(lowest_temp = 15)))
+str(today)
+
+```
+
+```{r}
+t1 <- today[[1]]
+t2 <- t1[[2]]
+t2
+```
+
+
+
+```{r}
+tomorrow <- list(
+  list("台北市",c(highest_temp = 25),c(lowest_temp = 18)),
+  list("新北市",c(highest_temp = 24),c(lowest_temp = 15)))
+```
+
+```{r}
+weather <- list(today,tomorrow)
+weather[[1]][[2]][[2]] # 今天/新北市/highest_temp
+weather[[2]][[2]][[2]] # 明天/新北市/highest_temp
+```
+
+```{r}
+today <- list(
+  list("台北市",
+       highest_temp=c(highest_temp = 25),
+       lowest_temp=c(lowest_temp = 18)),
+  list("新北市",
+       highest_temp=c(highest_temp = 24),
+       lowest_temp=c(lowest_temp = 15)))
+str(today)
+```
+
+
+```{r}
+today[[1]]$highest_temp
+```
+
+
+
+
+
+
