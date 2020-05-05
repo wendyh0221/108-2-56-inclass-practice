@@ -361,6 +361,238 @@ sum(list_victimAges_female$數目[pick_above30], na.rm = T) #我們要求出pick
 ```
 
 
+##相等，屬於
+
+`==`: 等於
+
+`!=`: 不等於
+
+`==`與`!=`可使用於字串
+
+
+example裡誰血型B型
+```{r}
+print(example[c("name","bloodType")])
+
+pick_bloodB <- example$bloodType == "B"
+example$name[pick_bloodB]
+```
+
+練習:創造可留下偶數的「要/不要」向量pick_evens
+```{r}
+sequenceNums <- c(11, 6, 8, 11, 12, 11, 3, 7, 10, 8)
+
+pick_evens <- (sequenceNums %% 2) == 0
+sequenceNums[pick_evens]
+```
+
+***
+還有一個常用的關聯運算：
+
+`%in%`: 屬於
+
+  *左邊元素「一一」檢視是不是屬於右邊元素集合。
+```{r}
+x <- c(1,5,8)
+y <- c(5,8)
+
+#x裡的元素值是不是屬於y集合
+x %in% y
+```
+
+練習:example裡誰來自大台北
+
+```{r}
+print(example[c("name","residence")])
+
+set_TaipeiMetro <- c("Taipei","New Taipei")
+pick_fromTaipeiMetro <- example$residence %in% set_TaipeiMetro
+example$name[pick_fromTaipeiMetro]
+```
+
+練習:創造 可選出來自法商學院的「要/不要」向量，pick_lawBusiness。
+
+```{r}
+str(transcript100to103)
+
+set_lawBusiness <- c("法學院","商學院")
+pick_lawBusiness <- transcript100to103$`學院` %in% set_lawBusiness
+```
+
+但上面這個方法不一定適合
+```{r}
+levels(factor(transcript100to103$`學院`))
+#因為有的時候法學院可能叫做法律學院 所以可以先用levels來檢查看看到底自己設的是不是正確的
+
+#還有另一個好用的函數
+unique(transcript100to103$`學院`)
+#這是用來排除重複元素 只要顯示一筆就好
+```
+
+
+###否定用法
+
+  *在「要/不要」向量前加上!會成為否定句的「要/不要」向量，元素裡的TRUE會轉成FALSE, FALSE則轉成TRUE。
+
+```{r}
+pick_not_fromTaipeiMetro <- ! pick_fromTaipeiMetro
+# 或
+pick_not_fromTaipeiMetro <- !(example$residence %in% set_TaipeiMetro) 
+# () 裡面會先運算完才做外面!的處理
+```
+
+```{r}
+print(example[c("name","residence")])
+
+example$name[pick_fromTaipeiMetro]
+example$name[pick_not_fromTaipeiMetro]
+```
+
+### 資料狀態
+
+  *is.na: 有缺失 不用再加字串
+
+  *is.{class/type name}: is.integer, is.character, is.factor … etc
+
+
+有時資料有缺失，在R裡會記成NA(即not available)如下例：
+```{r}
+x2 <- c(1,NA,10)
+y2 <- c(-1,NA,20)
+
+x3 <- c(NA,"小花")
+y3 <- c(NA,"小華")
+```
+
+前述的關係判斷遇到NA時，結果都會是NA——即無法判斷。要知道向量內各元素值是否NA，可使用is.na():
+```{r}
+x2
+is.na(x2)
+```
+
+缺失資料的判斷一定要用is.na **不能用==NA來判斷**：
+
+```{r}
+c(22,NA,18) -> a
+a==NA #判斷不出來
+is.na(a)
+```
+
+練習:example裡誰沒有體重資料
+```{r}
+print(example[c("name","weight")])
+
+pick_na <- is.na(example$weight)
+example$name[pick_na]
+```
+
+**R還有一種特別的缺失資料NaN (即not a number)，出現在沒有定義的數學運算上，如：
+
+```{r}
+0/0 #NaN只出現在數值向量上
+```
+
+練習: 創立 可選出缺失資料的「要/不要」向量pick_na, 並計算有多少筆缺失。
+
+```{r}
+list_victimAges_female$`數目` <- as.integer(list_victimAges_female$`數目`)
+
+pick_na <- is.na(list_victimAges_female$`數目`)
+total_na <- pick_na
+print(total_na)
+```
+
+###字元偵測
+
+  **stringr::str_detect()
+  
+練習:example裡誰喜歡美食
+```{r}
+print(example[c("name","hobby")])
+
+library(stringr)
+
+pick_loveFood <- str_detect(example$hobby,"美食")
+example$name[pick_loveFood]
+```
+
+  *不可以直接用 `==`的原因是因為 == 是要兩邊引號內完全相同 但原始example裡面 hobby引號裡面是有兩個興趣的
+  所以如果這時候用==話 沒有任何一個向量是完全等於("美食") 所以只能用str_detect
+
+
+新增一個假設的hobby2:
+```{r}
+example[["hobby2"]] <- c("美食", "時尚", "美食", "旅遊")
+
+print(example[c("name", "hobby2")])
+pick_loveFood2 <- example$hobby2 == "美食"
+example$name[pick_loveFood2]
+
+#因為這裡的興趣2裡面只有一個興趣 所以就可以用==
+```
+
+  **== :"字串內容一模一樣。
+
+  **str_detect :字串內容有關鍵字。
+
+
+練習
+
+以下資料為新北市垃圾車路線
+```{r}
+jsonlite::fromJSON("https://data.ntpc.gov.tw/od/data/api/EDC3AD26-8AE7-4916-A00B-BC6048D19BF8?$format=json") ->
+  garbageRoutes
+```
+
+```{r}
+#  1 用typeof()函數查詢電腦實質上如何看待garbageRoutes。
+typeof(garbageRoutes)  
+
+#  2 用class()函數查詢電腦把它能進行的操作運算歸屬於哪一類型。
+class(garbageRoutes)
+```
+
+由於garbageRoutes的本質是list，所以我們可以使用list所有操作手法，而class為data frame表示它有比典型list的運作多了些工具與變化（後面章節會提）。
+
+```{r}
+# 由linename元素判斷垃圾車有幾條路線。
+factor(garbageRoutes$linename) -> garbageRoutes$linename #原本linename是character 要把他成factor
+levels(garbageRoutes$linename) #看有幾條路線
+
+  
+# 由linename創造： 可篩選出下午路線的「要/不要」向量pick_afternoonRoutes。
+pick_afternoonRoutes <- str_detect(garbageRoutes$linename,"下午")
+garbageRoutes$linename[pick_afternoonRoutes]
+```
+
+
+####閱讀函數說明
+
+```{r}
+?str_detect
+```
+  *Title, Description, Usage, Arguments, Value, Examples
+
+練習:找出問題中包含“肺炎”字眼的問題。
+```{r}
+CDC_chatbox <- readr::read_csv("http://od.cdc.gov.tw/pr/CDC_chatbox.csv")
+
+pick <- str_detect(CDC_chatbox$Question,"肺炎")
+CDC_chatbox$Question[pick]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
