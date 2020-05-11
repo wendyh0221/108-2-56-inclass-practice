@@ -254,7 +254,147 @@ str_extract(addresses,myRegexSlotMachine)
 
 ###複製次數Quantifiers
 
+`(..|..|...)`或`[...]`只是一條reel strip, 前者是寬的（每個出象可以是多字元）後者是窄的（每個出象只是一個字元）。有時我們同樣的strip想連放很多條，可以在(..|..|...)或[...]後面加:
 
+  *`{n}`: 放n條strip，n是數字。
+  *`+`: 放1條或以上（多少不限）。
+  *`{n,m}`: 放n到m條strip，n及m都是數字。
+
+```{r}
+addresses <- c(
+  '臺中市后里區公館里尾社路385號',
+  '新竹市東區科學園路125號1樓',
+  '新竹市北區竹光路99號',
+  '金門縣金城鎮賢庵里山前33號',
+  '臺中市南屯區工業區二十四路23號1樓')
+#這裡遇到的狀況是 我知道號前面一定會有數字 但我沒辦法確每個號前面有多少數字 所以這時候得用+ (一條以上)
+```
+
+```{r}
+myRegexSlotMachine <- "[0-9]+號"
+print(myRegexSlotMachine)
+str_view_all(addresses,myRegexSlotMachine)
+str_extract(addresses,myRegexSlotMachine)
+
+str_view_all(addresses,"[0-9]+") # 樓號也會選到 因為沒有+號
+```
+
+
+###頭尾定位 Anchors
+
+  *如何更準確描述target在整個字串的位置*
+
+*在開頭：`^`target_regex
+
+*在結尾：target_regex`$`
+
+```{r}
+phrase <- c("唧唧复唧唧")
+```
+
+```{r}
+# 目標是前面的唧唧
+target_regex <- "唧唧"
+pattern <- glue("^{target_regex}")
+print(pattern)
+str_view(phrase, pattern) 
+```
+
+glue套件裡的glue函數會把字串中的{物值名稱}換成目前Environment裡該物件的值。在上面`{target_regex}`會被換成“唧唧”。
+
+```{r}
+# 目標是後面的唧唧
+target_regex2 <- "唧唧"
+pattern <- glue::glue("{target_regex2}$")
+print(pattern)
+str_view(phrase, pattern) 
+```
+
+
+###前後鄰居描述Look around 
+
+  *target後面是B*：target_regex(?=B_regex)： target_pattern後面是年
+
+  *target前面是A*：(?<=A_regex)target_regex：target_pattern前面是民國
+
+  *target前有A後有B*：(?<=A_regex)target_regex(?=B_regex)
+
+```{r}
+twDate <-  c("民國108年12月5日","民國98年10月5日")
+
+library(stringr)
+# 準備regex: 
+## 取出：「前有」民國，「後有」年的「數字」「們」
+## "(?<={A_regex}){target_regex}(?={B_regex})"
+
+target_regex <- "[0-9]+"
+A_regex <- "民國"
+B_regex <- "年"
+
+regex_pattern <- glue::glue(
+  "(?<={A_regex}){target_regex}(?={B_regex})"
+  )
+
+print(regex_pattern)
+
+## 如果同學已經很熟就可以直接寫
+regex_pattern <-
+  "(?<=民國)[0-9]+(?=年)"
+
+# 取出民國年，計算西元年
+year <- 
+  str_extract(
+    twDate,
+    regex_pattern)
+westernYear <- as.integer(year)+1911
+
+# 替換民國xx年的xx成西元年數字
+str_replace(
+  twDate,
+  regex_pattern,  # 要換掉的文字
+  as.character(westernYear) # 要替換的內容 因為replace只針對character所以要先把numeric轉成character
+) -> twDate_reformat
+print(twDate_reformat)
+
+
+lubridate::ymd(twDate_reformat)
+```
+
+練習:康熙元年是西元1662年，請將“康熙23年5月6日”轉成date class。（假設月日已是西曆月日）
+
+```{r}
+date <- "康熙23年5月6日"
+library(stringr)
+
+target_regex <- "[0-9]+"
+A_regex <- "康熙"
+B_regex <- "年"
+
+regex_pattern <- glue("(?<={A_regex}){target_regex}(?={B_regex})")
+print(regex_pattern)
+
+year <- str_extract(date,regex_pattern)
+westernYear <- as.integer(year)+1639
+
+str_replace(date,regex_pattern,
+            as.character(westernYear)) -> date_reformat
+print(date_reformat)
+
+lubridate::ymd(date_reformat)
+```
+
+之前我們使用str_extract函數粹取出以下地址的“xx號”包含“號”字，如果不要取到「號」字只取出數字，你會怎麼做？
+
+```{r}
+addresses <- c(
+  '臺中市后里區公館里尾社路385號',
+  '新竹市東區科學園路125號1樓'
+  )
+```
+
+```{r}
+str_extract(addresses,"[0-9]+(?=號)")
+```
 
 
 
