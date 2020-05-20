@@ -1,0 +1,191 @@
+---
+title: "0520practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##On list
+```{r}
+library(purrr)
+```
+
+###每個元素相同運算
+
+```{r}
+example <- list(
+  name=c("小明","小花","小新","美美"),
+  height=c(175,166,170,160),
+  weight=c(77,NA,60,43),
+  birthday=lubridate::ymd(c("1998-03-11","1999-12-22","1995-08-22","2001-10-10")),
+  hobby=c("美食 旅遊","旅遊 時尚","3C 美食","音樂 旅遊"),
+  residence=c("Taipei","New Taipei","Taichung","Kaohsiung"),
+  allowance=factor(c("0-1000","1001-2000","2000+","1001-2000")),
+  bloodType=c("A","B","B","O")
+)
+```
+
+之前如果我們想要取出小新的資料，會用要不要向量
+```{r}
+pick_小新 <- example$name == "小新"
+data_selected <- 
+  list(
+    name=example$name[pick_小新],
+    weight=example$weight[pick_小新],
+    height=example$height[pick_小新],
+    hobby=example$hobby[pick_小新],
+    residence=example$residence[pick_小新],
+    allowance=example$allowance[pick_小新],
+    bloodType=example$bloodType[pick_小新]
+  )
+```
+
+但是要一個一個打太麻煩了，所以我們可以使用purrr套件裡面的map函數
+```{r}
+map(example, ~.x[pick_小新]) -> data_selected 
+  
+data_selected
+```
+
+****
+
+範例:舞蹈表演
+
+```{r}
+jsonlite::fromJSON("https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=3", simplifyDataFrame = F) -> dance
+```
+
+```{r}
+# 第一個dance表演名稱
+dance[[1]]$title
+# 第二個dance表演名稱
+dance[[2]]$title
+```
+
+如果要把所有的表演名稱都取出來要打太多次，所以一樣可以用map
+
+```{r}
+map(dance, ~.x$title) -> list_titles
+list_titles
+```
+
+每個表演有時不止演出一場，每個表演的場次總數：
+```{r}
+# 記載第一個表演的所有場次訊息
+dance[[1]]$showInfo
+str(dance[[1]]$showInfo)
+# 計算第一個表演有幾個場次
+length(dance[[1]]$showInfo)
+# 計算第二個表演有幾個場次
+length(dance[[2]]$showInfo)
+```
+
+```{r}
+map(dance, ~length(.x$showInfo)) -> list_numeberofShows
+list_numeberofShows
+```
+
+第5個表演有4個場次，想知道它們的日期時間：
+
+```{r}
+# 這個表演第1個場次的訊息
+dance[[5]]$showInfo[[1]]$time
+# 這個表演第2個場次的訊息
+dance[[5]]$showInfo[[2]]$time
+```
+
+```{r}
+map(dance[[5]]$showInfo, ~.x$time) -> list_showTimes_dance5
+list_showTimes_dance5
+```
+
+####練習:
+
+找出第8個表演的所有場次時間(time)和地點(location):
+
+```{r}
+map(dance[[8]]$showInfo, ~.x$time)
+map(dance[[8]]$showInfo, ~.x$location)
+```
+
+*example
+
+```{r}
+num <- c(2,5,7,1,3)
+```
+
+如果想對每個元素都加3
+```{r}
+map(num, ~.x+3)
+```
+
+*example
+```{r}
+chr <- c("abaa","acdd")
+library(stringr)
+str_extract_all(chr[[1]],"[ad]")
+str_extract_all(chr[[2]],"[ad]")
+```
+
+```{r}
+map(chr,~str_extract_all(.x,"[ad]"))
+```
+
+
+###綜合練習
+
+1.請抓出每條路線的Id(路線代碼)、providerId(業者代碼)、providerName(業者中文名稱)、nameZh(中文名稱)。
+
+```{r}
+jsonlite::fromJSON("https://data.ntpc.gov.tw/od/data/api/67BB3C2B-E7D1-43A7-B872-61B2F082E11B?$format=json", simplifyDataFrame = F) -> busRoutes
+```
+
+```{r}
+map(busRoutes, ~.x$Id) ->listof_Id
+map(busRoutes, ~.x$providerId) -> listof_providerId
+map(busRoutes, ~.x$providerName) -> listof_providerName
+map(busRoutes, ~.x$nameZh) -> listof_nameZh
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
