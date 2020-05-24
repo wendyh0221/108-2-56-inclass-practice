@@ -1,0 +1,247 @@
+---
+title: "0524practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##Pipe
+
+
+###範例一
+
+```{r}
+threeHeigths <- c(Gary=178, John=182, Cam=175)
+```
+
+找出身高最高的人：
+
+  *先排序由大到小，
+
+  *接著取出第一個位置的人名
+
+
+*寫法一*:很直白，但在過程中會創造出很多不必要的物件，常常不知道怎麼命名
+```{r}
+# 先排序由大到小，
+sort(threeHeigths, decreasing=T) -> sorted_heights
+
+# 把排好的人名取出
+names(sorted_heights) -> sorted_persons
+
+# 接著取出第一個位置的人名
+sorted_persons[[1]] -> highestPerson
+```
+
+*寫法二*:雖然只要創造一個目標物件，但卻很不直白
+```{r}
+names(sort(threeHeigths, decreasing = T))[[1]] -> highestPerson
+```
+
+
+****
+所以我們要用magrittr這個套件，他可以用方法一旦卻可以不用創造一堆不需要的物件 -> 用`%>%`串聯
+```{r}
+library(magrittr)
+```
+
+
+```{r}
+sort(threeHeigths, decreasing=T) %>% 
+names(.) %>%
+.[[1]] -> highestPerson
+```
+
+前一個步驟的結果用`.`來代替然後用%>%來串接，所以上面的`.`=原本的sorted_persons，這個概念就叫做pipe operation
+
+
+###原則
+
+Pipe原則：
+```{r}
+f(w) -> x 
+g(x) -> y
+h(y) -> z
+```
+可以寫成:
+```{r}
+f(w) %>%
+  g(.) %>% 
+  h(.) -> z
+```
+
+也可以把w提出來
+```{r}
+w %>%
+  f(.) %>%
+  g(.) %>%
+  h(.) -> z
+```
+
+`%>%`: 把左邊產生的output，接過去成為下一段函數的input
+
+
+###範例2
+```{r}
+# 由cities創出每個元素對應的北部、東部、中部region factor
+cities <- factor(c("台北","花蓮","台東","台中"))
+levels(cities)
+```
+
+```{r}
+library(stringr)
+```
+
+
+```{r}
+region <- cities
+
+# 以下為一連串的pipe operation
+levels(region) -> currentLevels
+str_replace(currentLevels,"台北","北部") -> currentLevels1
+str_replace(currentLevels1,"花蓮|台東","東部") -> currentLevels2
+str_replace(currentLevels2,"台中","中部") -> regionLevels
+regionLevels -> levels(region)
+```
+
+```{r}
+levels(region) %>% 
+  str_replace(.,"台北","北部") %>%
+  str_replace(.,"花蓮|台東","東部") %>%
+  str_replace(.,"台中","中部") ->
+  levels(region)
+```
+
+###元素粹取
+
+其實元素粹取符號`$`,`[]`,`[[]]`也是函數, 要被取出元素的物件是第一個input，而取元素的位置資訊則是第二個input。
+
+```{r}
+num <- c(2,97,22,15,7)
+
+# 選出大於50的數字
+(num > 50) -> pick_big
+num[pick_big]
+```
+
+```{r}
+(num>50) %>%
+  num[.]
+```
+
+
+###執行順序
+
+R在面對pipe時會先把pipe走完最後才去做值assign給最後物件的動作
+也就是 `->`或`<-`最後進行
+
+
+###`.`省略原則
+
+若代表中間物件的.在函數的「*第一位*」則.可省略不寫，連它後面的,也去掉。小心若不在第一位則*不可*做省略.動作。
+
+```{r}
+levels(region) %>%
+  str_replace(.,"台北","北部") %>%
+  str_replace(.,"花蓮|台東","東部") %>%
+  str_replace(.,"台中","中部") ->
+  levels(region)
+```
+
+可改成
+
+```{r}
+levels(region) %>% 
+  str_replace("台北","北部") %>%
+  str_replace("花蓮|台東","東部") %>%
+  str_replace("台中","中部") -> 
+  levels(region)
+```
+
+要小心%>%是將左邊output放到右邊函數，這裡的右邊函數指的是最外圍的函數
+
+```{r}
+# 資料
+population <- c(`cityA`=500,`cityB`=1500, `cityC`=399)
+cities <- c("cityA","cityA","cityB","cityB","cityC")
+
+# 分析步驟
+names(sort(population)) -> setLevels
+factor(cities, levels = setLevels) -> cities 
+```
+
+分析步驟你可能會寫
+```{r}
+population %>% 
+  names(sort(.)) %>%
+  factor(cities, levels=.) -> cities
+```
+
+會有誤源自於
+```{r}
+population %>% names(sort(.))
+```
+
+是把population放到names()的input裡，而非sort()，但names()的input位置已被sort佔走。要改成
+
+```{r}
+population %>%
+  sort() %>%
+  names() %>%
+  factor(cities, levels=.) -> cities
+```
+
+也可以寫成
+```{r}
+names(sort(population)) %>%
+  factor(cities,levels = .) -> cities
+```
+
+
+###串接非單純函數程序
+
+若遇到pipe 串接的下一段並不是單純的函數的話，可以用`{}`把此段內容括起來並把前一段output要放的位置換成`.`。
+
+以上面的範例來改的話:
+
+```{r}
+population %>% 
+  names(sort(.)) %>%
+  factor(cities, levels=.) -> cities
+```
+
+只要改成
+```{r}
+population %>% 
+  {names(sort(.))} %>% #把錯誤的地方用{}刮起來就好
+  factor(cities, levels=.) -> cities
+```
+
+
+###範例三
+```{r}
+dataList <- list(
+  num=c(2,97,22,15,7),
+  chr=c("2","97","22","15","7")
+)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
