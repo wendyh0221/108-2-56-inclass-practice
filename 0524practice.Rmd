@@ -229,11 +229,37 @@ dataList <- list(
 )
 ```
 
+找出dataList中元素class為numeric裡那些大於50的數字
 
 
+```{r}
+#原本我們會針對
+is.numeric(dataList[[1]])
+is.numeric(dataList[[2]])
 
+#但在上一章節我們學到map函數
+library(purrr)
+map(dataList, ~is.numeric(.x)) -> results
+```
 
+```{r}
+map(dataList, is.numeric) -> results #map如果是套用某個特定函數的時候可以直接寫函數名稱，省略~跟.x
+unlist(results) -> pick_numeric #results的結果會是true fulse的形式所以要用unlist函數把他變成vector
 
+dataList[pick_numeric] -> num_element #是一個list 只有一層的list 因為剛剛用is.numeric只是把非num的東西刪掉
+(num_element[[1]] > 50) -> pick_big
+num_element[[1]][pick_big] -> bigNumber
+```
+
+```{r}
+library(magrittr)
+map(dataList, is.numeric) %>%
+unlist(.) %>%
+
+dataList[.] %>%
+{(.[[1]] > 50)} %>%
+num_element[[1]][.] -> bigNumber
+```
 
 
 
