@@ -1,0 +1,361 @@
+---
+title: "0621practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+###switch
+
+```{r}
+library(lubridate)
+library(stringr)
+library(purrr)
+library(magrittr)
+```
+
+
+跟前面的if else比的好處是不需要再一個一個想true/false
+而且出來的結果也不是logical而是character
+
+
+範例:Mathematical function
+```{r}
+#過去if else作法
+
+n <- 540
+
+if(n %% 2 ==1){
+  fvalue= -(n+1)/2
+} else{
+  fvalue= n/2
+}
+```
+
+```{r}
+#switch作法
+
+n <- 540 #n指的就是情境判斷物件
+
+conditionExpression_outcome = ifelse(n %% 2 ==0,"even","odd") #出來的output是character
+
+switch(conditionExpression_outcome,
+       "even"={fvalue <- n/2},
+       "odd"={fvalue <- -(n+1)/2},
+       warning("n要整數喔"))
+
+print(fvalue)
+```
+
+ifelse是超級好用的函數!
+```{r}
+grades <- c(52, 77, 59, 88, 90)
+
+ifelse(grades >= 60, "及格","不及格")
+```
+
+關於大括號
+```{r}
+miniFun <- function() {
+    lubridate::now()
+}
+miniFun()
+```
+
+```{r}
+miniFun2 <- function() lubridate::now()
+miniFun2()
+#因為只有一行指令，所以不需要加大括號也可以
+```
+
+若最後一個被執行的指令會產生print在螢幕的效果，則可以用{...}->或<-{...}將這print的值存出來。
+
+
+```{r}
+result <- {
+    x <- 2
+    y <- 3
+    x^y + 15
+}
+print(result)
+```
+
+```{r}
+result2 <- {
+    x <- 2
+    y <- 3
+    if (x < 3) {
+        warning("x值太小")
+    } else {
+        x^y + 15
+    }
+}
+print(result2)
+```
+
+body若最後一個「被執行」的指令是會印在螢幕的值，如該值要當回傳值可以不用return(...)就可以產生值回傳效果
+
+```{r}
+myFun <- function(x, y) {
+    return(x^y + 15)
+}
+
+# 等同於
+myFun2 <- function(x, y) {
+    x^y + 15
+}
+
+outcome <- myFun(5, 3)
+outcome2 <- myFun2(5, 3)
+print(outcome)
+print(outcome2)
+```
+
+####cut：連續轉類別
+
+
+cut(x, c(a, b, c)) 
+
+會把x分成(a,b], (b,c], 及NA 三大類，(a,b]在數學上是a< . <=b，所以左側a值是「不包含」在裡面的
+其中最小值可以是負無窮-Inf, 最大值可以是正無窮Inf
+
+```{r}
+a <- c(1, 2, 3)
+typeof(a)
+cut(a, c(1, 2, 3))
+```
+
+範例:數字成績轉英文字母成績
+
+>=90: A 同時螢幕出現“好棒棒” （89<…<=100）
+
+80-89：B 同時螢幕出現“好棒” （79<…<=89）
+
+70-79：C 同時螢幕出現“棒” （69<…<=79）
+
+70以下：F 同時螢幕出現"-_-" (-1<…<=69)
+
+```{r}
+grade <- sample(1:100, 10,replace = T) #1到100取出10個
+
+print(grade)
+
+grade <- grade %>% cut(c(-1,69,79,89,100))
+
+levels(grade)
+
+letterGrade <- switch(as.character(grade[[1]]), 
+    `(-1,69]` = {
+        print("-_-")
+        "F"
+    }, `(69,79]` = {
+        print("棒")
+        "C"
+    }, `(79,89]` = {
+        print("好棒")
+        "B"
+    }, `(89,100]` = {
+        print("好棒棒")
+        "A"
+    })
+```
+
+```{r}
+nowtime <- glue::glue("{today()} 18:00:00") %>% ymd_hms(tz = "Asia/Taipei")
+
+library(lubridate)
+library(glue)
+
+# 建立可當cutpoints的一天時間點
+cutpoints <- c(glue("{today()} 06:00:00"), glue("{today()} 09:00:00"), glue("{today()} 17:00:00"), 
+    glue("{today()} 19:00:00"), glue("{today()} 23:30:00"), glue("{today()+days(1)} 01:00:00"))
+cutpoints <- cutpoints %>% ymd_hms(tz = "Asia/Taipei")
+
+## 將nowtime轉成它對應的時段是'morning', 'evening', 或其他。
+nowtime <- cut(nowtime, cutpoints)
+levels(nowtime)[c(1, 3, 5)] <- c("morning", "evening", "jazz time")
+
+## 使用switch決定要做什麼事
+switch(as.character(nowtime), morning = {
+    print("要不要來閱讀點國際時事？")
+    browseURL("https://economist.com")
+}, evening = {
+    print("需不需要點餐呢？")
+    browseURL("https://www.foodpanda.com.tw/")
+}, `jazz time` = {
+    print("放鬆聽點Jazz。")
+    browseURL("https://open.spotify.com/playlist/37i9dQZF1DXbITWG1ZJKYt")
+}, {
+    print("機器人要休息，饒了我吧～～")
+})
+```
+
+```{r}
+whatNeedToDo_butler_mom <- function(nowtime = now()) {
+    library(lubridate)
+    library(glue)
+    
+    cutpoints <- c(glue("{today()} 06:00:00"), glue("{today()} 09:00:00"), glue("{today()} 17:00:00"), 
+        glue("{today()} 19:00:00"), glue("{today()} 23:30:00"), glue("{today()+days(1)} 01:00:00"))
+    cutpoints <- cutpoints %>% ymd_hms(tz = "Asia/Taipei")
+    
+    nowtime <- cut(nowtime, cutpoints)
+    levels(nowtime)[c(1, 3, 5)] <- c("morning", "evening", "jazz time")
+    
+    switch(as.character(nowtime), morning = {
+        print("要不要來閱讀點國際時事？")
+        browseURL("https://economist.com")
+    }, evening = {
+        print("需不需要點餐呢？")
+        browseURL("https://www.foodpanda.com.tw/")
+    }, `jazz time` = {
+        print("放鬆聽點Jazz。")
+        browseURL("https://open.spotify.com/playlist/37i9dQZF1DXbITWG1ZJKYt")
+    }, {
+        print("機器人要休息，饒了我吧～～")
+    })
+}
+
+ymd_hms(glue::glue("{today()} 08:00:00"), tz = "Asia/Taipei") %>% whatNeedToDo_butler_mom()
+
+ymd_hms(glue::glue("{today()} 14:00:00"), tz = "Asia/Taipei") %>% whatNeedToDo_butler_mom()
+
+ymd_hms(glue::glue("{today()} 18:00:00"), tz = "Asia/Taipei") %>% whatNeedToDo_butler_mom()
+
+ymd_hms(glue::glue("{today()+days(1)} 00:20:00"), tz = "Asia/Taipei") %>% whatNeedToDo_butler_mom()
+```
+
+
+###logical condition
+
+範例:比對答案
+```{r}
+myAnswer <- c(2, 3, 6)
+correctAnswer <- c(2, 3, 5)
+
+if (myAnswer == correctAnswer) {
+    # 只取用第一個T/F
+    print("你答對了")
+}
+```
+
+```{r}
+Sys.setenv(`_R_CHECK_LENGTH_1_CONDITION_` = "true")
+```
+
+
+####all, any
+
+all:所有都是T才T , 
+any:只要一個是T就T
+
+```{r}
+myAnswer <- c(2, 3, 6)
+correctAnswer <- c(2, 3, 5)
+
+if (all(myAnswer == correctAnswer)) {
+    # 要全TRUE
+    print("你答對了")
+}
+```
+
+```{r}
+if (any(myAnswer == correctAnswer)) {
+    # 只要有一個TRUE
+    print("裡頭有數字是對的")
+}
+```
+
+####&& ||
+
+有時「資訊到這裡就夠判斷情境」會產生，這時可以用&&或｜｜
+
+
+範例:對答案
+```{r}
+myAnswer <- c(1, 2, 3)
+correctAnswer <- factor(c(1, 2, 3))
+
+if (is.factor(myAnswer) && all(myAnswer == correctAnswer)) {
+    print("答對了")
+    10
+} else myGrade <- {
+    print("答錯了")
+    0
+}
+myGrade
+```
+
+```{r}
+if (is.factor(myAnswer) & all(myAnswer == correctAnswer)) {
+    print("答對了")
+    10
+} else myGrade <- {
+    print("答錯了")
+    0
+}
+myGrade
+```
+
+
+範例:只要符合以下資格均可申請補助
+
+年齡>=65
+
+家庭子孩數>3
+
+
+```{r}
+myAge <- 67
+myChildrenNumber <- 5
+
+if (myAge >= 65 | myChildrenNumber > 3) {
+    "符合申請資格"
+} else {
+    warning("不符合申請資格")
+}
+
+if (myAge >= 65 || myChildrenNumber > 3) {
+    "符合申請資格"
+} else {
+    warning("不符合申請資格")
+} #第一個對就不會執行第二個
+```
+
+5.3節主要在介紹「依情境執行不同body」的conditional execution，另外還有「依情境不同產生不同值」的conditional assignment。
+
+
+一個logical relation:
+```{r}
+x <- c(2, 5, 10, -21, 3, 8)
+ifelse(x%%2 == 0, "even", "odd")
+```
+
+多個logical relations:
+```{r}
+y <- sample(40:100, 20, replace = T)
+dplyr::case_when(y < 60 ~ "F", 60 <= y & y < 70 ~ "D", 71 <= y & y < 80 ~ "C", 80 <= 
+    y & y < 90 ~ "B", 90 <= y ~ "A")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
