@@ -1,0 +1,137 @@
+---
+title: "review_function"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#function
+
+##練習:請寫下供給函數 qs=0+2p
+
+```{r}
+supply <-
+  function(p){
+    q_s <- 0+2*p
+    return(q_s)
+  }
+supply(5)
+```
+
+##練習:打造Silly天氣預報機器人
+
+```{r}
+library(lubridate)
+```
+
+
+```{r}
+#首先要先知道silly需要知道什麼資訊:地點、日期
+
+dateInput <- today()
+locationInput <- "新北市"
+```
+
+```{r}
+askSilly_weather <- function(locationInput,dateInput){
+  jsonlite::fromJSON("https://opendata.cwb.gov.tw/fileapi/v1/opendataapi/F-C0032-001?Authorization=rdec-key-123-45678-011121314&format=JSON") ->
+  weather_next36hours
+  
+  (weather_next36hours$cwbopendata$dataset$location$locationName == locationInput) -> pick_location
+  
+  weather_next36hours$cwbopendata$dataset$location$weatherElement[pick_location][[1]] -> weatherAtLocation
+  (weatherAtLocation$elementName=="MaxT") ->
+    pick_MaxT
+  (weatherAtLocation$elementName=="MinT") ->
+    pick_MinT
+  weatherAtLocation$time[pick_MaxT][[1]]$parameter$parameterName[[1]] -> maxT
+  weatherAtLocation$time[pick_MinT][[1]]$parameter$parameterName[[1]] -> minT
+  
+  glue::glue("{locationInput} {dateInput} 氣溫，最高{maxT}度，最低{minT}度。")
+}
+```
+
+
+```{r}
+askSilly_weather("臺中市",today())
+askSilly_weather("花蓮縣",today())
+```
+
+##練習:打造一個國際時間轉換機器人叫what_time_it_is
+
+```{r}
+location <- "Europe/Paris"
+what_time_it_is <- function(location){
+  times <- with_tz(now(),tzone = "Europe/Paris")
+  return(times)
+}
+
+what_time_it_is(location)
+```
+
+```{r}
+location2 <- "Asia/Taipei"
+what_time_it_is <- function(location2){
+  times <- with_tz(now(),tzone = "Asia/Taipei")
+  return(times)
+}
+
+what_time_it_is(location2)
+```
+
+
+# Conditional Execution
+
+##練習:判斷學號輸入正確與否
+
+```{r}
+library(stringr)
+```
+
+
+```{r}
+readline(prompt = "請輸入你的學號") -> studentID
+
+if(
+  str_detect(studentID,'^[43](1[01][0-9]|9[0-9])[0-9]{5}',negate = T)
+){warning("你所輸入的學號不正確")
+  }
+```
+
+練習:確認使用者有安裝需要套件
+
+```{r}
+if(!require(lubridate)){
+  install.packages(lubridate)
+}
+```
+
+
+##練習:寫一個check_package(pkgName)函數，它會檢查使用者是否有安裝pkgName值（class character，length=1）的套件，如果沒有就安裝
+
+```{r}
+check_package <- function(pkgName){if(!require(pkgName)){install.packages(pkgName)}}
+```
+
+```{r}
+# 測試
+check_package("clipr")
+check_package("SOAR")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
