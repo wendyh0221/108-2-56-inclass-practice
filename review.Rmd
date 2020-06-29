@@ -122,12 +122,48 @@ check_package("SOAR")
 ```
 
 
+##練習:Mathematical function
+
+```{r}
+n <- 54
+if(as.logical(n %% 2)){
+  fvalue <- -(n+1)/2
+} else {
+  fvalue <- n/2
+}
+```
 
 
+```{r}
+myFun <- function(n){
+  if(as.logical(n %% 2)){
+    fvalue <- -(n+1)/2
+  } else {
+    fvalue <- n/2
+  }
+  return(fvalue)
+}
+
+myFun(54)
+```
+
+##練習:交卷提早時間
+
+```{r}
+jsonlite::fromJSON("https://www.dropbox.com/s/d14j5hp3i5ps657/examSubmissionTimes.json?dl=1") -> examSubmissionTime
 
 
+head(examSubmissionTime$section)
+head(examSubmissionTime$time)
+```
 
 
+###沒有分歧情境:只有一個交卷時間
+
+```{r}
+i <-1
+student_i_section <- examSubmissionTime
+```
 
 
 
